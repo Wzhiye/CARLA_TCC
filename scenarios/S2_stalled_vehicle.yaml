@@ -1,0 +1,58 @@
+# S2 - a van with hazard lights stands in the robotaxi's lane (broken down /
+# double-parked). Expected: the robotaxi stops behind it, opens a
+# STOPPED_VEHICLE request after a few seconds; the operator answers BYPASS_LEFT.
+
+id: S2_stalled_vehicle
+description: A broken-down van with hazard lights blocks most of the lane.
+target_vehicle: RT-02
+
+trigger:
+  type: site                   # fixed places on the map (see sites:); any robotaxi that drives there meets it
+  activation: approach         # props appear when a robotaxi's route reaches the site (always: keep them there)
+  activate_within_m: 150       # ...within this distance along its route
+  approach_min_m: 50           # ...but not if it is already closer (no props popping up in view)
+  # The operator's inject keys (T / F-keys) still place this scenario on the
+  # selected robotaxi's own route, between these distances:
+  min_distance_m: 50
+  max_distance_m: 120
+  retry_interval_s: 1.0
+  give_up_after_s: 120
+
+sites:
+  Town10HD_Opt:
+    - {name: A, road_id: 12, lane_id: -1, s: 20.0}   # two-lane street: pass in the oncoming lane
+    - {name: B, road_id: 5, lane_id: -2, s: 40.0}    # avenue, outer lane: pass in the lane on the left
+
+placement:
+  zone_length_m: 9             # the van is ~6 m long, centred 3 m into the zone
+  clear_before_m: 15
+  clear_after_m: 20           # room after the zone to steer back before a junction
+  left_lane: driving           # room to pass on the left
+  right_lane: any
+  require_empty_lane: true
+
+actors:
+  - pattern: vehicle
+    blueprint: vehicle.mercedes.sprinter
+    fallback_blueprints: [vehicle.volkswagen.t2_2021, vehicle.ford.ambulance,
+                          vehicle.carlamotors.carlacola, vehicle.tesla.model3]
+    s_m: 3
+    lateral_m: 0.5             # pulled a little towards the right edge
+    hazard_lights: true
+
+lane_guard:
+  enabled: true
+  upstream_m: 30
+  remove_within_m: 8
+  open_side: left
+
+cleanup:
+  after_passed_s: 8
+  max_active_s: 600
+
+repeat:
+  enabled: true
+  rearm_after_s: 90            # sites: time before the site can be activated again
+
+expected_request: STOPPED_VEHICLE
+expected_actions: [BYPASS_LEFT]

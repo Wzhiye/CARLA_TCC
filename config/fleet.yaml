@@ -1,0 +1,72 @@
+# Robotaxi fleet settings.
+
+fleet:
+  count: 3
+  blueprint: vehicle.lincoln.mkz_2020
+  color: "255,255,255"
+  # Spawn-point indices for RT-01, RT-02, RT-03. Leave empty to pick points that
+  # are far apart automatically (seeded, so runs are repeatable).
+  # Use `python -m ra_demo.tools.pick_point` to find indices on the map.
+  spawn_points: []
+
+  driving:
+    target_speed_kmh: 30
+    follow_speed_limits: true
+    comfort_decel_mps2: 2.5
+    obstacle_standoff_m: 6.0     # stop this far before a static obstacle (room to steer around it)
+    stalled_vehicle_standoff_m: 10.0  # ...and this far behind a stalled vehicle
+    walker_standoff_m: 5.0
+    route_end_buffer_m: 1.0
+    max_brake: 0.6
+    base_vehicle_threshold_m: 6.0
+    base_tlight_threshold_m: 5.0
+    detection_speed_ratio: 1.0
+    sampling_resolution_m: 2.0
+
+  perception:
+    lookahead_m: 50.0            # far enough to see a closure beyond a junction
+    lateral_margin_m: 0.35       # added to half the vehicle width
+    walker_margin_m: 0.3          # pedestrians count only once they step into the lane
+    prop_fallback_radius_m: 0.3
+
+  supervisor:
+    stopped_speed_mps: 0.15
+    blocked_enter_s: 1.0         # stopped this long behind a hazard before showing BLOCKED
+    static_block_wait_s: 3.0     # ask for help after 3 s in front of a static obstacle
+    stalled_vehicle_wait_s: 5.0  # vehicle with hazard lights standing in the lane
+    vehicle_block_wait_s: 25.0   # stopped vehicle that is not at a traffic light
+    walker_block_wait_s: 15.0
+    clear_confirm_s: 1.0
+
+  maneuvers:
+    lateral_margin_m: 0.7        # clearance kept to obstacles while bypassing
+    max_lateral_slope: 0.6       # metres sideways per metre forward
+    preview_m: 5.0               # offset is applied this far ahead (PID target lookahead)
+    tracking_lag_m: 4.0          # the car reaches a commanded shift about this much later
+    rear_margin_m: 1.5           # extra length before turning back (the rear cuts inside)
+    bypass_speed_kmh: 10
+    gap_timeout_s: 30            # give up waiting for a traffic gap after this
+    oncoming_clear_m: 60         # minimum free opposite lane ahead
+    oncoming_speed_mps: 7.0      # assumed oncoming speed: free distance = speed x time in that lane
+    behind_clear_m: 20           # no moving traffic this close behind in the target lane
+    stuck_timeout_s: 20
+    turn_search_m: 150           # look for the next junction this far ahead
+    turn_min_angle_deg: 35
+    pull_over_distance_m: 25
+    pull_over_speed_kmh: 18
+    pull_over_min_room_m: 10     # less room before an obstacle: secure in place instead
+    merge_distance_m: 12
+    merge_speed_kmh: 15
+
+  mission:
+    dwell_s: 10.0                # pickup / drop-off stop
+    min_trip_distance_m: 120.0
+    # Share of trips routed through one of the fixed incident sites (scenario
+    # `sites:`), so the demo does not rely on passing them by chance. 0 = never.
+    via_site_probability: 0.5
+    via_site_min_distance_m: 80  # the site must be at least this far along the new route
+    via_site_max_detour_m: 600   # skip the site if it lengthens the trip by more than this
+    # Optional fixed stop lists (spawn-point indices) per robotaxi, e.g.
+    # fixed_stops:
+    #   RT-01: [12, 87, 40]
+    fixed_stops: {}

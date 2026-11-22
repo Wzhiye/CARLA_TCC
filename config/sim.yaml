@@ -1,0 +1,56 @@
+# Simulation settings for the robotaxi remote-assistance demo (CARLA 0.9.16).
+
+carla:
+  host: 127.0.0.1
+  port: 2000
+  timeout: 20.0
+  tm_port: 8000
+
+world:
+  map: Town10HD_Opt          # loaded automatically if a different map is running
+  fixed_delta_seconds: 0.05  # 20 Hz synchronous step
+  realtime_factor: 1.0       # 1.0 = real time, 0.5 = half speed, 0 = as fast as possible
+  seed: 42
+  no_rendering: false
+  cleanup_leftovers: true    # remove props/robotaxis/background cars left by a crashed run
+
+traffic:
+  enabled: true
+  vehicles: 25
+  walkers: 20
+  cars_only: true            # skip trucks, bikes and motorcycles
+  speed_difference_pct: 20   # TM drives 20% below the speed limit
+  distance_to_leading_m: 2.5
+  spawn_clearance_m: 15      # keep this far from robotaxi spawn points
+  walker_cross_factor: 0.0
+  walker_seed: 42
+  car_lights_on: true
+  hybrid_physics: false
+
+scenarios:
+  dir: scenarios             # relative to the ra_demo folder
+  enabled:                   # scenario ids to load (this order = F1..F5 and the Y cycle)
+    - S1_construction        # fixed sites S1@A, S1@B          -> BYPASS_LEFT
+    - S2_stalled_vehicle     # fixed sites S2@A, S2@B          -> BYPASS_LEFT
+    - S3_road_closed         # fixed sites S3@A, S3@B          -> TURN_LEFT / TURN_RIGHT
+    - S4_passenger_assist    # random car with a passenger, every 90-240 s -> PULL_OVER, RESUME
+    - S5_construction_right  # fixed site S5@A                 -> BYPASS_RIGHT
+  auto_clear_after_s: 0      # >0: remove active props after N s (unattended runs)
+  manual_min_distance_m: 40  # T (inject on the selected car) may place the zone this close
+
+viewer:
+  enabled: true
+  width: 1280
+  height: 720
+  fov: 90
+  camera: front              # start view: front | chase | top (V cycles)
+  mirrors: true              # rear-view mirror insets (M toggles)
+  mirror_fps: 10             # mirror cameras render at this rate (saves GPU time)
+  spectator_follow: true     # server window shows the same view as the operator window (front by default)
+  confirm_commands: true     # maneuver commands need ENTER / a second press
+
+debug:
+  mode: subtle               # subtle (small dim route dots) | full (lines, corridors, labels) | off
+
+logging:
+  dir: ../logs               # RA event logs (JSON lines), relative to ra_demo

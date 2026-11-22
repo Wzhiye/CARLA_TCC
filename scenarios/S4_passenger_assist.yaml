@@ -1,0 +1,34 @@
+# S4 - a passenger presses the help button. Nothing blocks the road: the
+# robotaxi slows down and asks for instructions. Expected: PULL_OVER, then
+# RESUME once the situation is handled (or RESUME right away to dismiss).
+#
+# The event hits a random robotaxi that is driving a passenger (ride phase
+# TO_DROPOFF), at random times (trigger.interval_s, seeded by world.seed).
+
+id: S4_passenger_assist
+description: A passenger presses the help button.
+target_vehicle: random         # random: any robotaxi with a passenger; or a name such as RT-01
+
+trigger:
+  type: event
+  start_after_s: 60            # never before this
+  interval_s: [90, 240]        # time between two events, drawn at random
+  require_passenger: true      # only cars on their way to a drop-off
+  retry_interval_s: 1.0
+  give_up_after_s: 120         # nobody eligible for this long: draw a new time
+
+event:
+  reason: PASSENGER_ASSISTANCE
+  notes:                       # one is picked at random and shown to the operator
+    - "Passenger pressed the help button: feeling unwell"
+    - "Passenger pressed the help button: wants to get out now"
+    - "Passenger pressed the help button: left a phone at the pickup"
+    - "Passenger pressed the help button: child seat not secured"
+  speed_cap_kmh: 20            # drive on slowly until the operator answers
+
+repeat:
+  enabled: true                # keep drawing new events
+  rearm_after_s: 0
+
+expected_request: PASSENGER_ASSISTANCE
+expected_actions: [PULL_OVER]

@@ -1,0 +1,68 @@
+# S3 - the road beyond the next junction is closed. Expected: the robotaxi
+# waits at the junction entry (never inside the junction), opens a ROAD_CLOSED
+# request; the operator answers TURN_LEFT or TURN_RIGHT and the vehicle
+# re-routes to its destination avoiding the closed road.
+
+id: S3_road_closed
+description: Barriers close the road right after the next junction on the route.
+target_vehicle: RT-03
+
+trigger:
+  type: site                   # fixed places on the map (see sites:); any robotaxi that drives there meets it
+  activation: approach         # props appear when a robotaxi's route reaches the site (always: keep them there)
+  activate_within_m: 150       # ...within this distance along its route
+  approach_min_m: 50           # ...but not if it is already closer (no props popping up in view)
+  # The operator's inject keys (T / F-keys) still place this scenario on the
+  # selected robotaxi's own route, between these distances:
+  min_distance_m: 40           # junction entry between 40 and 160 m ahead
+  max_distance_m: 160
+  retry_interval_s: 1.0
+  give_up_after_s: 180
+
+# The site is the first metres of the road behind a junction (closure across all lanes).
+# Pick roads with detours: a destination that can only be reached through the
+# closure makes the robotaxi end its trip right after the turn.
+sites:
+  Town10HD_Opt:
+    - {name: A, road_id: 20, lane_id: -1, s: 4.0}    # behind junction 189 (from road 19): left and right turns
+    - {name: B, road_id: 6, lane_id: 1, s: 81.4}     # behind junction 23 (from road 7): left turn
+
+placement:
+  mode: junction_exit
+  after_junction_m: 4          # barriers 4 m after the junction exit
+  zone_length_m: 6
+  clear_after_m: 10
+  route_through: straight      # the route goes straight through that junction
+  require_turn: any            # ...and it offers a left or a right turn
+
+actors:
+  - pattern: road_block
+    blueprint: static.prop.streetbarrier
+    fallback_blueprints: [static.prop.chainbarrier, static.prop.constructioncone]
+    s_m: 0
+    barrier_spacing_m: 1.7
+    cones_upstream_m: 2.5
+    cone_blueprint: static.prop.constructioncone
+    cone_fallbacks: [static.prop.trafficcone01]
+  - pattern: single
+    blueprint: static.prop.warningaccident
+    fallback_blueprints: [static.prop.warningconstruction]
+    role: sign
+    s_m: 3                     # behind the barriers
+    lateral_m: 0.0
+
+lane_guard:
+  enabled: true
+  upstream_m: 12
+  remove_within_m: 10
+
+cleanup:
+  after_passed_s: 8
+  max_active_s: 600
+
+repeat:
+  enabled: true
+  rearm_after_s: 120           # sites: time before the site can be activated again
+
+expected_request: ROAD_CLOSED
+expected_actions: [TURN_LEFT, TURN_RIGHT]
